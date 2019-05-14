@@ -4,7 +4,7 @@ import base64
 import binascii
 import requests
 
-base_url = "http://35.196.135.216/3275375310/?post=%s"
+base_url = "http://35.196.135.216/daa1793873/?post=%s"
 
 b64d = lambda x: base64.decodestring(x.replace('~', '=').replace('!', '/').replace('-', '+'))
 b64e = lambda x: base64.encodestring(x).replace('=','~').replace('/','!').replace('+','-')
@@ -47,26 +47,36 @@ def xor_me(IV,IMV):
 		result += chr(hexxor(IV[x],IMV[x]))
 	return result
 
-cipherstring = "w9GY1wDePQ666DXlmx-TG7BXw-kafyEylx7-gFE2Iq86-xJ-z2r0KVcCv48r7vlupEvUj!3SZIBiPZ9VIXmgs2dMuoYAAR5d23rRAe1v3WdsxZLTJETsVzo80IdvbEApPPFspwv3oSYROBNQ3LzHLY3VZ0oJYh5sA6X4eoEW52IHxX-3voEtCQIfZ9LXB-IOTSM3H7d-ywzRnw!sWSLOjw~~"
+def decipher_me(cipher_text):
+	cipher_texts = chunks(cipher_text,16)
+	IMVs = []
+	result = []
+	for idx, cipher_text in enumerate(reversed(cipher_texts)):
+		if idx == len(cipher_texts)-1:
+			continue
+		known_values = []
+		while len(known_values) < len(cipher_text):
+ 			known_values = find_me_the_imv(cipher_text,known_values)
+ 			print known_values
+ 		result.insert(0,xor_me(known_values,map(lambda x: ord(x),cipher_texts[(idx+2)*-1])))
+ 		print result
+ 	return ''.join(result)
 
-decoded = b64d(cipherstring)
-cipher_texts = chunks(decoded,16)
-#print len(cipher_texts)
-#imv = [113, 162, 1, 201, 156, 252, 39, 3, 8, 21, 109, 216, 221, 13, 232, 4]
-#imv = [201, 129, 51, 33, 56, 59, 74, 3, 96, 205, 191, 59, 247, 120, 163, 50]
-#print  map(lambda x: ord(x),cipher_texts[(0+2)*-1])
-#xor = xor_me(imv,map(lambda x: ord(x),cipher_texts[-3]))
-#print xor
+def cipher_me(plain_text):
+	plain_texts = chunks(plain_text,16)
+	known_ciphers = ['\x00' * 16 ]			
+	for idx, text in enumerate(reversed(plain_texts)):
+		if idx == len(plain_texts):
+			continue
+		known_values = []
+		while len(known_values) < len(text):
+ 			known_values = find_me_the_imv(known_ciphers[0],known_values)
+ 			print known_values
+		known_ciphers.insert(0,xor_me(known_values,map(lambda x: ord(x), text)));
+		print known_ciphers 
+	return known_ciphers
 
 
-IMVs = []
-result = []
-for idx, cipher_text in enumerate(reversed(cipher_texts)):
-	if idx == len(cipher_texts)-1:
-		continue
-	known_values = []
-	while len(known_values) < len(cipher_text):
- 		known_values = find_me_the_imv(cipher_text,known_values)
- 		print known_values
- 	result.insert(0,xor_me(known_values,map(lambda x: ord(x),cipher_texts[(idx+2)*-1])))
- 	print result
+plain_text = '{"flag": "^FLAG^b8c2e8ad43fe55ac737d4d3b41a7c0d284b7b771a86889b90255151d63fa9275$FLAG$", "id": "1", "key": "iOAGDTTk1YTochGAvnDPvg~~"}\n\n\n\n\n\n\n\n\n\n'
+cipher_blocks = cipher_me(plain_text)
+print b64e(''.join(cipher_blocks))
